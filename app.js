@@ -96,7 +96,7 @@ function draw() {
         image(gameOverImage, 0, 0, width, height);
         gameOverSound.play();
         noLoop();
-}
+    }
 }
 
 const scenarioFactory = (scenarioImage, velocity) => {
@@ -191,7 +191,7 @@ class Hipsta extends Personage {
         this.jumpVelocity += this.gravity;
         if (this.positionY > this.positionYBase) this.positionY = this.positionYBase;
     }
-    }
+}
 
 class Enemy extends Personage {
     constructor(sprite, imagePersonage, positionX, widthPersonage, heightPersonage, widthSprite, heightSprite) {
