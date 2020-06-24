@@ -26,6 +26,7 @@ let sound;
 function preload() {
     scenarioImage = loadImage('./assets/scenario/floresta.png');
     hipstaImage = loadImage('./assets/personage/correndo.png');
+    soundJump = loadSound('/assets/sound/somPulo.mp3');
 }
 
 function setup() {
@@ -36,9 +37,16 @@ function setup() {
     gameSound.loop();
 }
 
+function keyPressed() {
+    if (key === 'ArrowUp') {
+        hipsta.jump();
+        soundJump.play();
+    }
+}
 function draw() {
     scenario.show();
     hipsta.show();
+    hipsta.applyGravity();
 }
 
 const scenarioFactory = (scenarioImage, velocity) => {
@@ -122,7 +130,15 @@ class Hipsta extends Personage {
             220, 
             270
         );
-        animate();
+    jump() {
+        this.jumpVelocity = -30;
+    }
+
+    applyGravity() {
+        this.positionY += this.jumpVelocity;
+        this.jumpVelocity += this.gravity;
+        if (this.positionY > this.positionYBase) this.positionY = this.positionYBase;
+    }
     }
 
     const animate = () => {
