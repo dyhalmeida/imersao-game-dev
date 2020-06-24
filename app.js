@@ -20,12 +20,46 @@ const matrizSpriteHipsta = [
 ]
 let soundJump;
 
+let enemy;
+let enemyImage;
+const matrizSpriteEnemy = [
+    [0, 0],
+    [104, 0],
+    [208, 0],
+    [312, 0],
+    [0, 104],
+    [104, 104],
+    [208, 104],
+    [312, 104],
+    [0, 208],
+    [104, 208],
+    [208, 208],
+    [312, 208],
+    [0, 312],
+    [104, 312],
+    [208, 312],
+    [312, 312],
+    [0, 418],
+    [104, 418],
+    [208, 418],
+    [312, 418],
+    [0, 522],
+    [104, 522],
+    [208, 522],
+    [312, 522],
+    [0, 626],
+    [104, 626],
+    [208, 626],
+    [312, 626],
+]
+
 let scenario;
 let sound;
 
 function preload() {
     scenarioImage = loadImage('./assets/scenario/floresta.png');
     hipstaImage = loadImage('./assets/personage/correndo.png');
+    enemyImage = loadImage('./assets/enemy/gotinha.png');
     soundJump = loadSound('/assets/sound/somPulo.mp3');
 }
 
@@ -33,6 +67,7 @@ function setup() {
     createCanvas(windowWidth, windowHeight);
     scenario = scenarioFactory(scenarioImage, 2);
     hipsta = new Hipsta(matrizSpriteHipsta, hipstaImage, 0, 110, 135, 220, 270);
+    enemy = new Enemy(matrizSpriteEnemy, enemyImage, width - 52, 52, 52, 104, 104);
     frameRate(40);
     gameSound.loop();
 }
@@ -43,10 +78,14 @@ function keyPressed() {
         soundJump.play();
     }
 }
+
 function draw() {
     scenario.show();
     hipsta.show();
     hipsta.applyGravity();
+    enemy.show();
+    enemy.move();
+}
 }
 
 const scenarioFactory = (scenarioImage, velocity) => {
@@ -141,12 +180,14 @@ class Hipsta extends Personage {
     }
     }
 
-    const animate = () => {
-        currentFrame++;
-        if (currentFrame >= frames.length - 1) currentFrame = 0;
+class Enemy extends Personage {
+    constructor(sprite, imagePersonage, positionX, widthPersonage, heightPersonage, widthSprite, heightSprite) {
+        super(sprite, imagePersonage, positionX, widthPersonage, heightPersonage, widthSprite, heightSprite);
+        this.velocity = 5;
     }
 
-    return {
-        show
+    move() {
+      this.positionX -= this.velocity;
+      if (this.positionX < -this.widthPersonage) this.positionX = width;
     }
 }
