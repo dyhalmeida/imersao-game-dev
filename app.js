@@ -54,12 +54,17 @@ const matrizSpriteEnemy = [
 ]
 
 let scenario;
-let sound;
+let gameSound;
+let gameOverSound;
+let gameOverImage;
 
 function preload() {
     scenarioImage = loadImage('./assets/scenario/floresta.png');
+    gameOverImage = loadImage('./assets/scenario/gameover.png');
     hipstaImage = loadImage('./assets/personage/correndo.png');
     enemyImage = loadImage('./assets/enemy/gotinha.png');
+    gameSound = loadSound('/assets/sound/trilha_jogo.mp3');
+    gameOverSound = loadSound('/assets/sound/gameover.mp3');
     soundJump = loadSound('/assets/sound/somPulo.mp3');
 }
 
@@ -85,6 +90,12 @@ function draw() {
     hipsta.applyGravity();
     enemy.show();
     enemy.move();
+
+    if (hipsta.isColliding(enemy)) {
+        gameSound.stop();
+        image(gameOverImage, 0, 0, width, height);
+        gameOverSound.play();
+        noLoop();
 }
 }
 
@@ -157,18 +168,20 @@ class Hipsta extends Personage {
         this.positionY = this.positionYBase;
     }
 
-    const show = () => {
-        image(
-            personageImage, 
-            0, // eixo X
-            height - heigthPersonage, 
-            widthPersonage, 
-            heigthPersonage, 
-            frames[currentFrame][0], // eixo X 
-            frames[currentFrame][1], // eixo Y
-            220, 
-            270
+    isColliding(enemy) {
+        const precision = .7;
+        return collideRectRect(
+            this.positionX,
+            this.positionY,
+            this.widthPersonage * precision,
+            this.heightPersonage * precision,
+            enemy.positionX,
+            enemy.positionY,
+            enemy.widthPersonage * precision,
+            enemy.heightPersonage * precision,
         );
+    }
+
     jump() {
         this.jumpVelocity = -30;
     }
