@@ -108,6 +108,7 @@ const enemies = [];
 
 
 let scenario;
+let score;
 let gameSound;
 let gameOverSound;
 let gameOverImage;
@@ -127,6 +128,7 @@ function preload() {
 function setup() {
     createCanvas(windowWidth, windowHeight);
     scenario = scenarioFactory(scenarioImage, 2);
+    score = new Score();
     hipsta = new Hipsta(matrizSpriteHipsta, hipstaImage, 0, 30,110, 135, 220, 270);
     const enemyGotinha = new Enemy(matrizSpriteEnemyGotinha, enemyGotinhaImage, width - 52, 30, 52, 52, 104, 104, 5, 100);
     const enemyTroll = new Enemy(matrizSpriteEnemyTroll, enemyTrollImage, width, 0, 200, 200, 400, 400, 10, 200);
@@ -148,6 +150,8 @@ function keyPressed() {
 function draw() {
    
     scenario.show();
+    score.show();
+    score.store();
     hipsta.show();
     hipsta.applyGravity();
    
@@ -155,10 +159,10 @@ function draw() {
         enemy.show();
         enemy.move();
         if (hipsta.isColliding(enemy)) {
-            // gameSound.stop();
-            // image(gameOverImage, 0, 0, width, height);
-            // gameOverSound.play();
-            // noLoop();
+            gameSound.stop();
+            image(gameOverImage, 0, 0, width, height);
+            gameOverSound.play();
+            noLoop();
         }
     });
 
@@ -228,10 +232,11 @@ class Personage {
 class Hipsta extends Personage {
     constructor(sprite, imagePersonage, positionX, variationY, widthPersonage, heightPersonage, widthSprite, heightSprite) {
         super(sprite, imagePersonage, positionX, variationY, widthPersonage, heightPersonage, widthSprite, heightSprite);
-        this.gravity = 3;
+        this.gravity = 6;
         this.jumpVelocity = 0;
         this.positionYBase = height - this.heightPersonage - this.variationY;
         this.positionY = this.positionYBase;
+        this.jumps = 0;
     }
 
     isColliding(enemy) {
@@ -249,13 +254,19 @@ class Hipsta extends Personage {
     }
 
     jump() {
-        this.jumpVelocity = -30;
+        if (this.jumps < 2) {
+            this.jumpVelocity = -50;
+            this.jumps++;
+        }
     }
 
     applyGravity() {
         this.positionY += this.jumpVelocity;
         this.jumpVelocity += this.gravity;
-        if (this.positionY > this.positionYBase) this.positionY = this.positionYBase;
+        if (this.positionY > this.positionYBase) { 
+            this.positionY = this.positionYBase;
+            this.jumps = 0;
+        }
     }
 }
 
@@ -271,4 +282,23 @@ class Enemy extends Personage {
       this.positionX -= this.velocity;
       if (this.positionX < -this.widthPersonage - this.delay) this.positionX = width;
     }
+}
+
+class Score {
+    
+    constructor() {
+        this.score = 0;
+    }
+
+    show() {
+        textAlign(RIGHT);
+        fill('#fff');
+        textSize(50);
+        text(parseInt(this.score), width - 30, 50);
+    }
+
+    store() {
+        this.score += 0.2;
+    }
+
 }
