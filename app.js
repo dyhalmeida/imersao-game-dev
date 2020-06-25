@@ -20,9 +20,9 @@ const matrizSpriteHipsta = [
 ]
 let soundJump;
 
-let enemy;
-let enemyImage;
-const matrizSpriteEnemy = [
+let enemyGotinha;
+let enemyGotinhaImage;
+const matrizSpriteEnemyGotinha = [
     [0, 0],
     [104, 0],
     [208, 0],
@@ -53,6 +53,61 @@ const matrizSpriteEnemy = [
     [312, 626],
 ]
 
+let enemyTroll;
+let enemyTrollImage;
+const matrizSpriteEnemyTroll = [
+    [0, 0],
+    [400, 0],
+    [800, 0],
+    [1200, 0],
+    [1600, 0],
+    [0, 400],
+    [400, 400],
+    [800, 400],
+    [1200, 400],
+    [1600, 400],
+    [0, 800],
+    [400, 800],
+    [800, 800],
+    [1200, 800],
+    [1600, 800],
+    [0, 1200],
+    [400, 1200],
+    [800, 1200],
+    [1200, 1200],
+    [1600, 1200],
+    [0, 1600],
+    [400, 1600],
+    [800, 1600],
+    [1200, 1600],
+    [1600, 1600],
+    [0, 2000],
+    [400, 2000],
+    [800, 2000],
+]
+
+let enemyGotinhaVoadora;
+let enemyGotinhaVoadoraImage;
+const matrizSpriteEnemyGotinhaVoadora = [
+    [0, 0],
+    [200, 0],
+    [400, 0],
+    [0, 150],
+    [200, 150],
+    [400, 150],
+    [0, 300],
+    [200, 300],
+    [400, 300],
+    [0, 450],
+    [200, 450],
+    [400, 450],
+    [0, 600],
+    [200, 600],
+    [400, 600],
+    [0, 750],
+]
+
+
 let scenario;
 let gameSound;
 let gameOverSound;
@@ -62,7 +117,9 @@ function preload() {
     scenarioImage = loadImage('./assets/scenario/floresta.png');
     gameOverImage = loadImage('./assets/scenario/gameover.png');
     hipstaImage = loadImage('./assets/personage/correndo.png');
-    enemyImage = loadImage('./assets/enemy/gotinha.png');
+    enemyGotinhaImage = loadImage('./assets/enemy/gotinha.png');
+    enemyTrollImage = loadImage('./assets/enemy/troll.png');
+    enemyGotinhaVoadoraImage = loadImage('./assets/enemy/gotinha-voadora.png');
     gameSound = loadSound('/assets/sound/trilha_jogo.mp3');
     gameOverSound = loadSound('/assets/sound/gameover.mp3');
     soundJump = loadSound('/assets/sound/somPulo.mp3');
@@ -71,8 +128,10 @@ function preload() {
 function setup() {
     createCanvas(windowWidth, windowHeight);
     scenario = scenarioFactory(scenarioImage, 2);
-    hipsta = new Hipsta(matrizSpriteHipsta, hipstaImage, 0, 110, 135, 220, 270);
-    enemy = new Enemy(matrizSpriteEnemy, enemyImage, width - 52, 52, 52, 104, 104);
+    hipsta = new Hipsta(matrizSpriteHipsta, hipstaImage, 0, 30,110, 135, 220, 270);
+    enemyGotinha = new Enemy(matrizSpriteEnemyGotinha, enemyGotinhaImage, width - 52, 30, 52, 52, 104, 104, 5, 100);
+    enemyTroll = new Enemy(matrizSpriteEnemyTroll, enemyTrollImage, width, 0, 200, 200, 400, 400, 10, 200);
+    enemyGotinhaVoadora = new Enemy(matrizSpriteEnemyGotinhaVoadora, enemyGotinhaVoadoraImage, width - 52, 200, 100, 75, 200, 150, 10, 600);
     frameRate(40);
     gameSound.loop();
 }
@@ -88,14 +147,18 @@ function draw() {
     scenario.show();
     hipsta.show();
     hipsta.applyGravity();
-    enemy.show();
-    enemy.move();
+    enemyGotinha.show();
+    enemyGotinha.move();
+    enemyGotinhaVoadora.show();
+    enemyGotinhaVoadora.move();
+    enemyTroll.show();
+    enemyTroll.move();
 
-    if (hipsta.isColliding(enemy)) {
-        gameSound.stop();
-        image(gameOverImage, 0, 0, width, height);
-        gameOverSound.play();
-        noLoop();
+    if (hipsta.isColliding(enemyGotinha)) {
+        // gameSound.stop();
+        // image(gameOverImage, 0, 0, width, height);
+        // gameOverSound.play();
+        // noLoop();
     }
 }
 
@@ -125,13 +188,14 @@ const scenarioFactory = (scenarioImage, velocity) => {
 
 class Personage {
 
-    constructor(sprite, imagePersonage, positionX, widthPersonage, heightPersonage, widthSprite, heightSprite) {
+    constructor(sprite, imagePersonage, positionX, variationY, widthPersonage, heightPersonage, widthSprite, heightSprite) {
         this.sprite = sprite;
         this.imagePersonage = imagePersonage;
         this.widthPersonage = widthPersonage;
         this.heightPersonage = heightPersonage;
         this.positionX = positionX;
-        this.positionY = height - this.heightPersonage;
+        this.variationY = variationY;
+        this.positionY = height - this.heightPersonage - this.variationY;
         this.widthSprite = widthSprite;
         this.heightSprite = heightSprite;
         this.currentFrame = 0;
@@ -160,11 +224,11 @@ class Personage {
 }
 
 class Hipsta extends Personage {
-    constructor(sprite, imagePersonage, positionX, widthPersonage, heightPersonage, widthSprite, heightSprite) {
-        super(sprite, imagePersonage, positionX, widthPersonage, heightPersonage, widthSprite, heightSprite);
+    constructor(sprite, imagePersonage, positionX, variationY, widthPersonage, heightPersonage, widthSprite, heightSprite) {
+        super(sprite, imagePersonage, positionX, variationY, widthPersonage, heightPersonage, widthSprite, heightSprite);
         this.gravity = 3;
         this.jumpVelocity = 0;
-        this.positionYBase = height - this.heightPersonage;
+        this.positionYBase = height - this.heightPersonage - this.variationY;
         this.positionY = this.positionYBase;
     }
 
@@ -194,13 +258,15 @@ class Hipsta extends Personage {
 }
 
 class Enemy extends Personage {
-    constructor(sprite, imagePersonage, positionX, widthPersonage, heightPersonage, widthSprite, heightSprite) {
-        super(sprite, imagePersonage, positionX, widthPersonage, heightPersonage, widthSprite, heightSprite);
-        this.velocity = 5;
+    constructor(sprite, imagePersonage, positionX, variationY, widthPersonage, heightPersonage, widthSprite, heightSprite, velocity, delay) {
+        super(sprite, imagePersonage, positionX, variationY, widthPersonage, heightPersonage, widthSprite, heightSprite);
+        this.velocity = velocity;
+        this.delay = delay;
+        this.positionX = width + this.delay
     }
 
     move() {
       this.positionX -= this.velocity;
-      if (this.positionX < -this.widthPersonage) this.positionX = width;
+      if (this.positionX < -this.widthPersonage - this.delay) this.positionX = width;
     }
 }
