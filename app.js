@@ -20,7 +20,6 @@ const matrizSpriteHipsta = [
 ]
 let soundJump;
 
-let enemyGotinha;
 let enemyGotinhaImage;
 const matrizSpriteEnemyGotinha = [
     [0, 0],
@@ -53,7 +52,6 @@ const matrizSpriteEnemyGotinha = [
     [312, 626],
 ]
 
-let enemyTroll;
 let enemyTrollImage;
 const matrizSpriteEnemyTroll = [
     [0, 0],
@@ -86,7 +84,6 @@ const matrizSpriteEnemyTroll = [
     [800, 2000],
 ]
 
-let enemyGotinhaVoadora;
 let enemyGotinhaVoadoraImage;
 const matrizSpriteEnemyGotinhaVoadora = [
     [0, 0],
@@ -106,6 +103,8 @@ const matrizSpriteEnemyGotinhaVoadora = [
     [400, 600],
     [0, 750],
 ]
+
+const enemies = [];
 
 
 let scenario;
@@ -129,9 +128,12 @@ function setup() {
     createCanvas(windowWidth, windowHeight);
     scenario = scenarioFactory(scenarioImage, 2);
     hipsta = new Hipsta(matrizSpriteHipsta, hipstaImage, 0, 30,110, 135, 220, 270);
-    enemyGotinha = new Enemy(matrizSpriteEnemyGotinha, enemyGotinhaImage, width - 52, 30, 52, 52, 104, 104, 5, 100);
-    enemyTroll = new Enemy(matrizSpriteEnemyTroll, enemyTrollImage, width, 0, 200, 200, 400, 400, 10, 200);
-    enemyGotinhaVoadora = new Enemy(matrizSpriteEnemyGotinhaVoadora, enemyGotinhaVoadoraImage, width - 52, 200, 100, 75, 200, 150, 10, 600);
+    const enemyGotinha = new Enemy(matrizSpriteEnemyGotinha, enemyGotinhaImage, width - 52, 30, 52, 52, 104, 104, 5, 100);
+    const enemyTroll = new Enemy(matrizSpriteEnemyTroll, enemyTrollImage, width, 0, 200, 200, 400, 400, 10, 200);
+    const enemyGotinhaVoadora = new Enemy(matrizSpriteEnemyGotinhaVoadora, enemyGotinhaVoadoraImage, width - 52, 200, 100, 75, 200, 150, 10, 600);
+    enemies.push(enemyGotinha);
+    enemies.push(enemyTroll);
+    enemies.push(enemyGotinhaVoadora);
     frameRate(40);
     gameSound.loop();
 }
@@ -144,22 +146,22 @@ function keyPressed() {
 }
 
 function draw() {
+   
     scenario.show();
     hipsta.show();
     hipsta.applyGravity();
-    enemyGotinha.show();
-    enemyGotinha.move();
-    enemyGotinhaVoadora.show();
-    enemyGotinhaVoadora.move();
-    enemyTroll.show();
-    enemyTroll.move();
+   
+    enemies.forEach(enemy => {
+        enemy.show();
+        enemy.move();
+        if (hipsta.isColliding(enemy)) {
+            // gameSound.stop();
+            // image(gameOverImage, 0, 0, width, height);
+            // gameOverSound.play();
+            // noLoop();
+        }
+    });
 
-    if (hipsta.isColliding(enemyGotinha)) {
-        // gameSound.stop();
-        // image(gameOverImage, 0, 0, width, height);
-        // gameOverSound.play();
-        // noLoop();
-    }
 }
 
 const scenarioFactory = (scenarioImage, velocity) => {
