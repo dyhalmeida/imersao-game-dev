@@ -105,18 +105,26 @@ const matrizSpriteEnemyGotinhaVoadora = [
 ]
 
 const enemies = [];
-let currentEnemy = 0;
-
 
 let scenario;
+let viewHome;
+let viewHomeFont;
+let currentScene =  'home';
+let scenes;
 let score;
+let game;
+let home;
+let managerButton;
+
 let gameSound;
 let gameOverSound;
 let gameOverImage;
 
 function preload() {
     scenarioImage = loadImage('./assets/scenario/floresta.png');
-    gameOverImage = loadImage('./assets/scenario/gameover.png');
+    viewHome = loadImage('./assets/assets/telaInicial.png');
+    viewHomeFont = loadFont('./assets/assets/fonteTelaInicial.otf')
+    gameOverImage = loadImage('./assets/assets/gameover.png');
     hipstaImage = loadImage('./assets/personage/correndo.png');
     enemyGotinhaImage = loadImage('./assets/enemy/gotinha.png');
     enemyTrollImage = loadImage('./assets/enemy/troll.png');
@@ -128,57 +136,24 @@ function preload() {
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
-    scenario = scenarioFactory(scenarioImage, 2);
-    score = new Score();
-    hipsta = new Hipsta(matrizSpriteHipsta, hipstaImage, 0, 30,110, 135, 220, 270);
-    const enemyGotinha = new Enemy(matrizSpriteEnemyGotinha, enemyGotinhaImage, width - 52, 30, 52, 52, 104, 104, 5, 100);
-    const enemyTroll = new Enemy(matrizSpriteEnemyTroll, enemyTrollImage, width, 0, 200, 200, 400, 400, 10, 200);
-    const enemyGotinhaVoadora = new Enemy(matrizSpriteEnemyGotinhaVoadora, enemyGotinhaVoadoraImage, width - 52, 200, 100, 75, 200, 150, 10, 50);
-    enemies.push(enemyGotinha);
-    enemies.push(enemyTroll);
-    enemies.push(enemyGotinhaVoadora);
+    game = new Game();
+    home = new Home();
+    game.setup();
+    managerButton = new ManagerButton('Start', width / 2, height / 2);
+    scenes = {
+        game,
+        home,
+    }
     frameRate(40);
     gameSound.loop();
 }
 
 function keyPressed() {
-    if (key === 'ArrowUp') {
-        hipsta.jump();
-        soundJump.play();
-    }
+   game.keyPressed(key);
 }
 
 function draw() {
-   
-    scenario.show();
-    score.show();
-    score.store();
-    hipsta.show();
-    hipsta.applyGravity();
-
-    const enemy = enemies[currentEnemy];
-    const visibleEnemy = enemy.positionX < -enemy.widthPersonage
-   
-    // enemies.forEach(enemy => {
-    enemy.show();
-    enemy.move();
-
-    if (visibleEnemy) {
-        currentEnemy++;
-        if (currentEnemy > 2) {
-            currentEnemy = 0;
-        }
-        enemy.velocity = parseInt(random(10, 40));
-    }
-
-    if (hipsta.isColliding(enemy)) {
-        gameSound.stop();
-        image(gameOverImage, 0, 0, width, height);
-        gameOverSound.play();
-        noLoop();
-    }
-    // });
-
+   scenes[currentScene].draw();
 }
 
 const scenarioFactory = (scenarioImage, velocity) => {
@@ -312,6 +287,120 @@ class Score {
 
     store() {
         this.score += 0.2;
+    }
+
+}
+
+class Game {
+
+    constructor() {
+        this.currentEnemy = 0;
+    }
+
+    setup() {
+        scenario = scenarioFactory(scenarioImage, 2);
+        score = new Score();
+        hipsta = new Hipsta(matrizSpriteHipsta, hipstaImage, 0, 30,110, 135, 220, 270);
+        const enemyGotinha = new Enemy(matrizSpriteEnemyGotinha, enemyGotinhaImage, width - 52, 30, 52, 52, 104, 104, 5, 100);
+        const enemyTroll = new Enemy(matrizSpriteEnemyTroll, enemyTrollImage, width, 0, 200, 200, 400, 400, 10, 200);
+        const enemyGotinhaVoadora = new Enemy(matrizSpriteEnemyGotinhaVoadora, enemyGotinhaVoadoraImage, width - 52, 200, 100, 75, 200, 150, 10, 50);
+        enemies.push(enemyGotinha);
+        enemies.push(enemyTroll);
+        enemies.push(enemyGotinhaVoadora);
+    }
+
+    keyPressed(key) {
+        if (key === 'ArrowUp') {
+            hipsta.jump();
+            soundJump.play();
+        }
+    }
+
+    draw() {
+        scenario.show();
+        score.show();
+        score.store();
+        hipsta.show();
+        hipsta.applyGravity();
+
+        const enemy = enemies[this.currentEnemy];
+        const visibleEnemy = enemy.positionX < -enemy.widthPersonage
+    
+        // enemies.forEach(enemy => {
+        enemy.show();
+        enemy.move();
+
+        if (visibleEnemy) {
+            this.currentEnemy++;
+            if (this.currentEnemy > 2) {
+                this.currentEnemy = 0;
+            }
+            enemy.velocity = parseInt(random(10, 40));
+        }
+
+        if (hipsta.isColliding(enemy)) {
+            gameSound.stop();
+            image(gameOverImage, 0, 0, width, height);
+            gameOverSound.play();
+            noLoop();
+        }
+        // });
+    }
+
+}
+
+class ManagerButton {
+    
+    constructor(text, positionX, positionY) {
+        this.text = text;
+        this.positionX = positionX;
+        this.positionY = positionY;
+        this.button = createButton(this.text);
+        this.button.addClass('button-view-home');
+    }
+
+    draw() {
+        this.button.position(this.positionX, this.positionY);
+        this.button.mousePressed(() => this.alterScene());
+        this.button.center('horizontal');
+    }
+
+    alterScene() {
+        this.button.remove();
+        currentScene = 'game'
+    }
+
+
+}
+
+class Home {
+
+    constructor() {
+
+    }
+
+    draw() {
+        this.drawHome();
+        this.drawText();
+        this.drawButton();
+    }
+
+    drawHome() {
+        image(viewHome, 0, 0, width, height);        
+    }
+
+    drawText() {
+        textFont(viewHomeFont);
+        textAlign('center');
+        textSize(50);
+        text('As aventuras de', width / 2, height / 4);
+        textSize(150);
+        text('Hipsta', width / 2, height / 5 * 3);
+    }
+
+    drawButton() {
+        managerButton.positionY = height / 7 * 5;
+        managerButton.draw();
     }
 
 }
