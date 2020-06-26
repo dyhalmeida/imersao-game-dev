@@ -105,6 +105,7 @@ const matrizSpriteEnemyGotinhaVoadora = [
 ]
 
 const enemies = [];
+let currentEnemy = 0;
 
 
 let scenario;
@@ -132,7 +133,7 @@ function setup() {
     hipsta = new Hipsta(matrizSpriteHipsta, hipstaImage, 0, 30,110, 135, 220, 270);
     const enemyGotinha = new Enemy(matrizSpriteEnemyGotinha, enemyGotinhaImage, width - 52, 30, 52, 52, 104, 104, 5, 100);
     const enemyTroll = new Enemy(matrizSpriteEnemyTroll, enemyTrollImage, width, 0, 200, 200, 400, 400, 10, 200);
-    const enemyGotinhaVoadora = new Enemy(matrizSpriteEnemyGotinhaVoadora, enemyGotinhaVoadoraImage, width - 52, 200, 100, 75, 200, 150, 10, 600);
+    const enemyGotinhaVoadora = new Enemy(matrizSpriteEnemyGotinhaVoadora, enemyGotinhaVoadoraImage, width - 52, 200, 100, 75, 200, 150, 10, 50);
     enemies.push(enemyGotinha);
     enemies.push(enemyTroll);
     enemies.push(enemyGotinhaVoadora);
@@ -154,17 +155,29 @@ function draw() {
     score.store();
     hipsta.show();
     hipsta.applyGravity();
+
+    const enemy = enemies[currentEnemy];
+    const visibleEnemy = enemy.positionX < -enemy.widthPersonage
    
-    enemies.forEach(enemy => {
-        enemy.show();
-        enemy.move();
-        if (hipsta.isColliding(enemy)) {
-            gameSound.stop();
-            image(gameOverImage, 0, 0, width, height);
-            gameOverSound.play();
-            noLoop();
+    // enemies.forEach(enemy => {
+    enemy.show();
+    enemy.move();
+
+    if (visibleEnemy) {
+        currentEnemy++;
+        if (currentEnemy > 2) {
+            currentEnemy = 0;
         }
-    });
+        enemy.velocity = parseInt(random(10, 40));
+    }
+
+    if (hipsta.isColliding(enemy)) {
+        gameSound.stop();
+        image(gameOverImage, 0, 0, width, height);
+        gameOverSound.play();
+        noLoop();
+    }
+    // });
 
 }
 
