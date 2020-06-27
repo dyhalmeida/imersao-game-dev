@@ -120,12 +120,16 @@ let gameSound;
 let gameOverSound;
 let gameOverImage;
 
+let life;
+let lifeImage;
+
 function preload() {
     scenarioImage = loadImage('./assets/scenario/floresta.png');
     viewHome = loadImage('./assets/assets/telaInicial.png');
     viewHomeFont = loadFont('./assets/assets/fonteTelaInicial.otf')
     gameOverImage = loadImage('./assets/assets/gameover.png');
     hipstaImage = loadImage('./assets/personage/correndo.png');
+    lifeImage = loadImage('./assets/assets/coracao.png');
     enemyGotinhaImage = loadImage('./assets/enemy/gotinha.png');
     enemyTrollImage = loadImage('./assets/enemy/troll.png');
     enemyGotinhaVoadoraImage = loadImage('./assets/enemy/gotinha-voadora.png');
@@ -225,9 +229,13 @@ class Hipsta extends Personage {
         this.positionYBase = height - this.heightPersonage - this.variationY;
         this.positionY = this.positionYBase;
         this.jumps = 0;
+        this.isImmortal = false;
     }
 
     isColliding(enemy) {
+        if (this.isImmortal) {
+            return false;
+        }
         const precision = .7;
         return collideRectRect(
             this.positionX,
@@ -256,6 +264,15 @@ class Hipsta extends Personage {
             this.jumps = 0;
         }
     }
+
+    immortal() {
+        this.isImmortal = true;
+        setTimeout(() => {
+            this.isImmortal = false;
+        }, 1000);
+    }
+
+
 }
 
 class Enemy extends Personage {
@@ -301,6 +318,7 @@ class Game {
         scenario = scenarioFactory(scenarioImage, 2);
         score = new Score();
         hipsta = new Hipsta(matrizSpriteHipsta, hipstaImage, 0, 30,110, 135, 220, 270);
+        life = new Life(lifeImage, 3, 3);
         const enemyGotinha = new Enemy(matrizSpriteEnemyGotinha, enemyGotinhaImage, width - 52, 30, 52, 52, 104, 104, 5, 100);
         const enemyTroll = new Enemy(matrizSpriteEnemyTroll, enemyTrollImage, width, 0, 200, 200, 400, 400, 10, 200);
         const enemyGotinhaVoadora = new Enemy(matrizSpriteEnemyGotinhaVoadora, enemyGotinhaVoadoraImage, width - 52, 200, 100, 75, 200, 150, 10, 50);
@@ -318,6 +336,7 @@ class Game {
 
     draw() {
         scenario.show();
+        life.draw();
         score.show();
         score.store();
         hipsta.show();
@@ -339,10 +358,14 @@ class Game {
         }
 
         if (hipsta.isColliding(enemy)) {
-            gameSound.stop();
-            image(gameOverImage, 0, 0, width, height);
-            gameOverSound.play();
-            noLoop();
+            life.delete();
+            hipsta.immortal();
+            if (life.lifes === 0) {
+                gameSound.stop();
+                image(gameOverImage, 0, 0, width, height);
+                gameOverSound.play();
+                noLoop();
+            }
         }
         // });
     }
@@ -403,4 +426,35 @@ class Home {
         managerButton.draw();
     }
 
+}
+
+class Life {
+    constructor(lifeImage, totalLife, lifeInitial) {
+        this.lifeImage = lifeImage;
+        this.totalLife = totalLife;
+        this.lifeInitial = lifeInitial;
+        this.lifes = this.lifeInitial;
+        this.width = 25;
+        this.height = 25;
+        this.positionX = 20;
+        this.positionY = 20;
+    }
+
+    draw() {
+        for(let i = 0; i < this.lifes; i++) {
+            const margin = i * 10;
+            const position = this.positionX * (1 + i);
+            image(this.lifeImage, position + margin, this.positionY, this.width, this.height);
+        }
+    }
+
+    store() {
+        if (this.lifes <= this.totalLife) {
+            this.lifes++;
+        }
+    }
+
+    delete() {
+       this.lifes--;
+    }
 }
