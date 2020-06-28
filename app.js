@@ -122,6 +122,7 @@ let gameOverImage;
 
 let life;
 let lifeImage;
+let config;
 
 function preload() {
     scenarioImage = loadImage('./assets/scenario/floresta.png');
@@ -136,6 +137,7 @@ function preload() {
     gameSound = loadSound('/assets/sound/trilha_jogo.mp3');
     gameOverSound = loadSound('/assets/sound/gameover.mp3');
     soundJump = loadSound('/assets/sound/somPulo.mp3');
+    config = loadJSON('./config.json');
 }
 
 function setup() {
@@ -276,17 +278,20 @@ class Hipsta extends Personage {
 }
 
 class Enemy extends Personage {
-    constructor(sprite, imagePersonage, positionX, variationY, widthPersonage, heightPersonage, widthSprite, heightSprite, velocity, delay) {
+    constructor(sprite, imagePersonage, positionX, variationY, widthPersonage, heightPersonage, widthSprite, heightSprite, velocity) {
         super(sprite, imagePersonage, positionX, variationY, widthPersonage, heightPersonage, widthSprite, heightSprite);
         this.velocity = velocity;
-        this.delay = delay;
-        this.positionX = width + this.delay
+        this.positionX = width;
     }
 
     move() {
       this.positionX -= this.velocity;
-      if (this.positionX < -this.widthPersonage - this.delay) this.positionX = width;
     }
+
+    visible() {
+        this.positionX = width;
+    }
+
 }
 
 class Score {
@@ -311,17 +316,18 @@ class Score {
 class Game {
 
     constructor() {
-        this.currentEnemy = 0;
+        this.index = 0;
+        this.map = [...config.map];
     }
 
     setup() {
         scenario = scenarioFactory(scenarioImage, 2);
         score = new Score();
         hipsta = new Hipsta(matrizSpriteHipsta, hipstaImage, 0, 30,110, 135, 220, 270);
-        life = new Life(lifeImage, 3, 3);
-        const enemyGotinha = new Enemy(matrizSpriteEnemyGotinha, enemyGotinhaImage, width - 52, 30, 52, 52, 104, 104, 5, 100);
-        const enemyTroll = new Enemy(matrizSpriteEnemyTroll, enemyTrollImage, width, 0, 200, 200, 400, 400, 10, 200);
-        const enemyGotinhaVoadora = new Enemy(matrizSpriteEnemyGotinhaVoadora, enemyGotinhaVoadoraImage, width - 52, 200, 100, 75, 200, 150, 10, 50);
+        life = new Life(lifeImage, config.config.lifes, config.config.lifeInitial);
+        const enemyGotinha = new Enemy(matrizSpriteEnemyGotinha, enemyGotinhaImage, width - 52, 30, 52, 52, 104, 104, 5);
+        const enemyTroll = new Enemy(matrizSpriteEnemyTroll, enemyTrollImage, width, 0, 200, 200, 400, 400, 10);
+        const enemyGotinhaVoadora = new Enemy(matrizSpriteEnemyGotinhaVoadora, enemyGotinhaVoadoraImage, width - 52, 200, 100, 75, 200, 150, 10);
         enemies.push(enemyGotinha);
         enemies.push(enemyTroll);
         enemies.push(enemyGotinhaVoadora);
@@ -342,19 +348,23 @@ class Game {
         hipsta.show();
         hipsta.applyGravity();
 
-        const enemy = enemies[this.currentEnemy];
-        const visibleEnemy = enemy.positionX < -enemy.widthPersonage
+        const lineMap = this.map[this.index];
+        
+        const enemy = enemies[lineMap.enemy];
+        const visibleEnemy = enemy.positionX < -enemy.widthPersonage;
+
+        enemy.velocity = lineMap.velocity;
     
         // enemies.forEach(enemy => {
         enemy.show();
         enemy.move();
 
         if (visibleEnemy) {
-            this.currentEnemy++;
-            if (this.currentEnemy > 2) {
-                this.currentEnemy = 0;
+            this.index++;
+            enemy.visible();
+            if (this.index > this.map.length - 1) {
+                this.index = 0;
             }
-            enemy.velocity = parseInt(random(10, 40));
         }
 
         if (hipsta.isColliding(enemy)) {

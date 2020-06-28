@@ -1,0 +1,13 @@
+{
+    "config": {
+        "lifes": 5,
+        "lifeInitial": 5
+    },
+    "map": [
+        { "enemy": 0, "velocity": 10 },
+        { "enemy": 1, "velocity": 25 },
+        { "enemy": 1, "velocity": 20 },
+        { "enemy": 0, "velocity": 35 },
+        { "enemy": 2, "velocity": 40 }
+    ]
+}
